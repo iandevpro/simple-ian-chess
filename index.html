@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simple Ian's Chess</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1>Simple Ian's Chess</h1>
+      <span class="subtitle">a small in-browser chess engine &mdash; negamax + alpha-beta, iterative deepening, optional opening book</span>
+    </header>
+
+    <div class="board-column">
+      <div class="captured-row" id="capturedTop"></div>
+
+      <div class="board-wrap">
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="captured-row" id="capturedBottom"></div>
+
+      <div class="status-bar">
+        <div>
+          <span class="thinking-dot" id="thinkingDot" hidden></span>
+          <span class="status-text" id="statusText">White to move</span>
+          <div class="status-sub" id="statusSub"></div>
+        </div>
+        <button id="abortBtn" class="danger" disabled>Abort computer thinking and move now</button>
+      </div>
+
+      <div class="card">
+        <h2>Moves</h2>
+        <div class="moves-list" id="movesList"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <h2>Game</h2>
+        <div class="row between">
+          <label for="humanColor">Play as</label>
+          <select id="humanColor">
+            <option value="w">White</option>
+            <option value="b">Black</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="newGameBtn" class="primary full">New game</button>
+        </div>
+        <div class="row">
+          <button id="undoBtn" class="full">Undo last move</button>
+          <button id="flipBtn" class="full">Flip board</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Computer strength</h2>
+        <div class="row">
+          <label for="depthSlider" style="min-width:80px">Depth (ply)</label>
+          <input type="range" id="depthSlider" min="1" max="12" value="4" step="1" />
+          <span class="depth-display" id="depthDisplay">4</span>
+        </div>
+        <div class="row">
+          <label for="depthNumber" style="min-width:80px">Exact value</label>
+          <input type="number" id="depthNumber" min="1" max="100" value="4" />
+          <span class="status-sub">2 moves look-ahead = 4 ply (default)</span>
+        </div>
+        <div class="row">
+          <input type="checkbox" id="pawnRushCheckbox" />
+          <label for="pawnRushCheckbox">Pawns Rush (encourage computer to move Pawns)</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Opening book</h2>
+        <div class="row">
+          <input type="checkbox" id="useBookCheckbox" />
+          <label for="useBookCheckbox">Use openings book</label>
+        </div>
+        <div class="row">
+          <label for="bookFileInput" style="font-size:0.78rem;color:var(--ink-dim)">
+            Polyglot .bin file (e.g. gm2001.bin)
+          </label>
+        </div>
+        <div class="row">
+          <input type="file" id="bookFileInput" accept=".bin" />
+        </div>
+        <div class="book-status" id="bookStatus">No book loaded &mdash; will attempt assets/book/gm2001.bin automatically.</div>
+      </div>
+
+      <div class="card">
+        <h2>Position</h2>
+        <div class="row">
+          <label style="min-width:40px">FEN</label>
+          <input type="text" id="fenInput" style="flex:1" />
+        </div>
+        <div class="row">
+          <button id="loadFenBtn" class="full">Load FEN</button>
+          <button id="copyFenBtn" class="full">Copy current FEN</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Export game</h2>
+        <div class="row" style="gap:14px">
+          <button id="copyPgnBtn" class="icon-btn" data-tooltip="Copy PGN" aria-label="Copy PGN">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="8" y="8" width="12" height="13" rx="2"/>
+              <path d="M5.5 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v.5"/>
+            </svg>
+          </button>
+          <button id="downloadPgnBtn" class="icon-btn" data-tooltip="Download PGN" aria-label="Download PGN">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v12"/>
+              <path d="M6.5 10.5 12 16l5.5-5.5"/>
+              <path d="M4 20h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="note">
+      The opening book reader implements the standard Polyglot format and will use any compatible
+      <code>.bin</code> book you load &mdash; it ships with <code>gm2001.bin</code>.
+    </footer>
+
+    <section class="credits">
+      <h2>History, quotes, licenses.</h2>
+      <ol>
+        <li>
+          Alex, thank you for casually mentioning that DuoLingo has a chess course
+        </li>
+        <li>
+          Dan Heisman "Everyone's Second Chess Book", 2017.
+          This chess engine was inspired by a paragraph from the above book,
+          Chapter 10 "The Three Big Areas For Improvement", Safety/Tactics, p.126,
+          where he mentioned that there is a computer chess engine, which only could look for four ply (two moves)
+          and that it could play comparable to FIDE/USCF 1650.
+          After reading that, I HAD TO IMPLEMENT IT MYSELF :-)
+        </li>
+        <li>
+          "Chess is brutal", said Marcus during my first visit to San Diego Chess Club.
+          This engine is brutal at snatching free hanging pieces. Do not leave them en prise.
+        </li>
+        <li>
+          Initially this was a Python implementation of the negamax algorithm, later re-written in C++, now
+          re-implemented in JS.
+        </li>
+        <li>
+          Chess piece graphics are taken from lichess's lila staunty
+          <a href="https://github.com/lichess-org/lila/tree/master/public/piece/staunty" target="_blank" rel="noopener">https://github.com/lichess-org/lila/tree/master/public/piece/staunty</a>
+          There, it's mentioned that the author is "sadsnake1" and it is covered under the "CC BY-NC-SA 4.0" license.
+          <br />
+          <a href="https://github.com/lichess-org/lila/blob/master/COPYING.md" target="_blank" rel="noopener">https://github.com/lichess-org/lila/blob/master/COPYING.md</a>
+          <br />
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-sa/4.0/</a>
+        </li>
+        <li>
+          Chess move generation is taken from
+          <a href="https://github.com/jhlywa/chess.js" target="_blank" rel="noopener">https://github.com/jhlywa/chess.js</a>
+          <br />
+          <a href="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" target="_blank" rel="noopener">https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js</a>
+          <br />
+          It is covered by the "BSD-2-Clause license"
+          <a href="https://github.com/jhlywa/chess.js?tab=BSD-2-Clause-1-ov-file" target="_blank" rel="noopener">https://github.com/jhlywa/chess.js?tab=BSD-2-Clause-1-ov-file</a>
+        </li>
+        <li>
+          Chess opening book
+          <a href="https://github.com/michaeldv/donna_opening_books/raw/master/gm2001.bin" target="_blank" rel="noopener">https://github.com/michaeldv/donna_opening_books/raw/master/gm2001.bin</a>
+          <br />
+          It is free per
+          <a href="https://github.com/michaeldv/donna_opening_books/" target="_blank" rel="noopener">https://github.com/michaeldv/donna_opening_books/</a>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="promoModal" hidden>
+    <div class="promo-box" id="promoBox"></div>
+  </div>
+
+  <script src="js/chess.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
